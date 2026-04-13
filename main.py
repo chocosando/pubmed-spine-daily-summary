@@ -14,7 +14,7 @@ print("--- 환경 변수 점검 시작 ---")
 print(f"GMAIL_USER 존재 여부: {'✅' if GMAIL_USER else '❌'}")
 print(f"GMAIL_PW 존재 여부: {'✅' if GMAIL_PW else '❌'}")
 print(f"OPENAI_KEY 존재 여부: {'✅' if OPENAI_KEY else '❌'}")
-
+ 
 # 만약 이 값이 None이라면 키를 못 가져온 것입니다.
 if not OPENAI_KEY:
     print("Error: OpenAI API Key not found!")
