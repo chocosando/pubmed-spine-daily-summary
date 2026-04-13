@@ -65,7 +65,7 @@ def summarize_and_translate(abstract):
     response = client.chat.completions.create(
         model="gpt-4o-mini",
         messages=[
-            {"role": "system", "content": "You are a professional musculoskeletal radiologist and medical translator."},
+            {"role": "system", "content": "You are a professional spine and musculoskeletal radiologist and medical translator."},
             {"role": "user", "content": prompt}
         ]
     )
@@ -76,7 +76,7 @@ def send_mail(info, content, receiver):
     <html>
     <body style="font-family: 'Malgun Gothic', sans-serif; line-height: 1.6;">
         <div style="max-width: 600px; margin: auto; border: 1px solid #ddd; padding: 20px; border-radius: 10px;">
-            <h2 style="color: #0071bc; border-bottom: 2px solid #0071bc; padding-bottom: 10px;">Daily Radiology Update</h2>
+            <h2 style="color: #0071bc; border-bottom: 2px solid #0071bc; padding-bottom: 10px;">[추영] Spine Radiology Update</h2>
             <h3 style="color: #2c3e50;">{info['title']}</h3>
             <p style="font-size: 0.9em; color: #555;"><strong>Authors:</strong> {info['authors']}<br>
             <strong>Journal:</strong> {info['journal']}</p>
