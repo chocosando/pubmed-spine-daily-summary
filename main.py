@@ -11,7 +11,7 @@ GMAIL_PW = os.getenv('GMAIL_PASSWORD')
 OPENAI_KEY = os.getenv('OPENAI_API_KEY')
 
 # [수정] 받는 사람 이메일 주소들을 리스트로 관리하세요.
-RECEIVER_EMAILS = [GMAIL_USER, "chocosando@daum.net"] 
+RECEIVER_EMAILS = [GMAIL_USER, "chocosando@daum.net", "agn70@yuhs.ac", "reanhea55@yuhs.ac"] 
 
 def get_latest_paper_details():
     Entrez.email = GMAIL_USER
