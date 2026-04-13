@@ -10,6 +10,11 @@ GMAIL_PW = os.getenv('GMAIL_PASSWORD')
 OPENAI_KEY = os.getenv('OPENAI_API_KEY')
 RECEIVER_EMAIL = GMAIL_USER  # 본인에게 보낼 경우
 
+# 만약 이 값이 None이라면 키를 못 가져온 것입니다.
+if not OPENAI_KEY:
+    print("Error: OpenAI API Key not found!")
+
+
 # 2. PubMed에서 인기 논문 찾기
 def get_latest_paper():
     Entrez.email = GMAIL_USER
