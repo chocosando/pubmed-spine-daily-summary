@@ -16,7 +16,7 @@ RECEIVER_EMAILS = [GMAIL_USER, "chocosando@daum.net"]
 def get_latest_paper_details():
     Entrez.email = GMAIL_USER
     # MSK Radiology 관련 최신 논문 검색 (테스트를 위해 기간 30일 설정)
-    query = '("Musculoskeletal Radiology"[Mesh] OR "Radiology"[Journal]) AND "last 30 days"[dp]'
+    query = '("Spine"[Mesh] OR "Radiology"[Journal]) AND "last 60 days"[dp]'
     handle = Entrez.esearch(db="pubmed", term=query, sort="relevance", retmax=1)
     record = Entrez.read(handle)
     id_list = record["IdList"]
