@@ -14,7 +14,7 @@ RECEIVER_EMAIL = GMAIL_USER  # 본인에게 보낼 경우
 def get_latest_paper():
     Entrez.email = GMAIL_USER
     # 검색어: 최근 7일간 MSK Radiology 관련 가장 관련도 높은 논문 1개
-    query = '("Radiology"[Mesh] OR "Spine"[Mesh]) AND "last 30 days"[dp]'
+    query = '("Radiology"[Mesh] OR "Spine"[Mesh])' # AND "last 30 days"[dp]'
     handle = Entrez.esearch(db="pubmed", term=query, sort="relevance", retmax=1)
     record = Entrez.read(handle)
     id_list = record["IdList"]
