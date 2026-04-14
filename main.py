@@ -95,7 +95,7 @@ def summarize_and_translate(abstract):
     
     response = client.chat.completions.create(
         # 더 똑똑한 결과를 원하시면 gpt-4o (또는 gpt-4o-mini)를 사용하세요.
-        model="gpt-4o-mini", 
+        model="gpt-4o", 
         messages=[
             {"role": "system", "content": "You provide high-level academic summaries for medical professionals."},
             {"role": "user", "content": prompt}
