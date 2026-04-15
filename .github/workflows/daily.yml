@@ -21,7 +21,7 @@ jobs:
 
       - name: Install Dependencies
         run: |
-          pip install biopython openai
+          pip install biopython openai requests
 
       - name: Run Script
         env:
