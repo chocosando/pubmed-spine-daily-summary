@@ -6,43 +6,52 @@ import smtplib
 from email.mime.text import MIMEText
 from email.mime.multipart import MIMEMultipart
 
+import random # 파일 최상단에 추가
+
 # 환경 변수 및 설정
 GMAIL_USER = os.getenv('GMAIL_USER')
 GMAIL_PW = os.getenv('GMAIL_PASSWORD')
 OPENAI_KEY = os.getenv('OPENAI_API_KEY')
 
 # [수정] 받는 사람 이메일 주소들을 리스트로 관리하세요.
-RECEIVER_EMAILS = [GMAIL_USER, "chocosando@daum.net", "agn70@yuhs.ac", "reanhea55@yuhs.ac", "classic0610@yuhs.ac", "andrew0668@yuhs.ac", "sando@yuhs.ac", "jaywony@gmail.com", "jjdragon112@gmail.com", "leesw1@gmail.com"] 
-#RECEIVER_EMAILS = [GMAIL_USER] 
+#RECEIVER_EMAILS = [GMAIL_USER, "chocosando@daum.net", "agn70@yuhs.ac", "reanhea55@yuhs.ac", "classic0610@yuhs.ac", "andrew0668@yuhs.ac", "sando@yuhs.ac", "jaywony@gmail.com", "jjdragon112@gmail.com", "leesw1@gmail.com"] 
+RECEIVER_EMAILS = [GMAIL_USER] 
+
 
 def get_latest_paper_details():
     Entrez.email = GMAIL_USER
     
-    # [개선 1] Spine Radiology 범위를 넓히기 위한 상세 키워드 조합
-    # Spine 뿐만 아니라 Intervertebral Disc, Spinal Cord, Spondylosis 등 포괄
-    spine_keywords = '("Spine"[Mesh] OR "Spinal Cord"[Mesh] OR "Intervertebral Disc"[Mesh] OR "Spondylosis"[Mesh] OR "Spinal Diseases"[Mesh] OR "Vertebrae"[Title/Abstract])'
+    # [검색 쿼리] 최근 7일 이내의 다양한 저널 및 주제
+    journals = (
+        '("Radiology"[Journal] OR "Radiology. Artificial intelligence"[Journal] OR '
+        '"Lancet Digital Health"[Journal] OR "European Radiology"[Journal] OR '
+        '"Skeletal radiology"[Journal] OR "AJR. American journal of roentgenology"[Journal])'
+    )
+    topics = '("Musculoskeletal System"[Mesh] OR "Artificial Intelligence"[Mesh] OR "Deep Learning"[Mesh])'
     
-    # [개선 2] 임상적 유용성이 높은 High-Impact 저널 리스트
-    # 권위 있는 Radiology 저널 및 Spine 전문 저널 포함
-    top_journals = '("Radiology"[Journal] OR "European Radiology"[Journal] OR "AJNR Am J Neuroradiol"[Journal] OR "Spine"[Journal] OR "The Spine Journal"[Journal] OR "Skeletal Radiology"[Journal] OR "Lancet"[Journal] OR "New England Journal of Medicine"[Journal])'
-
-    # [개선 3] 검색 쿼리 결합 (최근 60일로 범위를 넓혀 그 중 가장 '인기 있는' 것 추출)
-    query = f"{spine_keywords} AND {top_journals} AND (Clinical Trial[Filter] OR Review[Filter] OR Systematic Review[Filter] OR \"last 60 days\"[dp])"
+    # 최신성(pub_date)을 기준으로 검색하거나, 관련도순 검색 결과 중 상위권을 후보로 둠
+    query = f"{journals} AND {topics} AND (2025:2026[pdat])"
     
-    # [개선 4] sort="relevance"를 통해 인용이나 매칭도가 높은 '인기 논문' 우선 추출
-    handle = Entrez.esearch(db="pubmed", term=query, sort="relevance", retmax=5)
+    # [수정] retmax를 10으로 늘려 후보군을 많이 확보합니다.
+    handle = Entrez.esearch(db="pubmed", term=query, sort="relevance", retmax=10)
     record = Entrez.read(handle)
     id_list = record["IdList"]
     
     if not id_list:
-        # 검색 결과가 없을 경우를 대비한 Fallback (일반적인 Spine 최신 논문)
-        query_fallback = '("Spine"[Journal] OR "Radiology"[Journal]) AND "last 30 days"[dp]'
-        handle = Entrez.esearch(db="pubmed", term=query_fallback, sort="relevance", retmax=1)
+        # 백업 쿼리: 최근 7일간의 Radiology 저널 논문 5개
+        query_fallback = '"Radiology"[Journal] AND "last 7 days"[dp]'
+        handle = Entrez.esearch(db="pubmed", term=query_fallback, sort="relevance", retmax=5)
         record = Entrez.read(handle)
         id_list = record["IdList"]
 
     if not id_list:
         return None
+    
+    # [핵심] 검색 결과 리스트에서 무작위로 1개를 선택합니다.
+    # 이렇게 하면 매일 실행될 때마다 상위 10개 중 다른 논문이 뽑힐 확률이 높습니다.
+    pmid = random.choice(id_list)
+    
+    print(f"Selected PMID: {pmid} from candidates: {id_list}")
     
     # 상위 5개 중 가장 적합한 첫 번째 논문 상세 정보 가져오기
     pmid = id_list[0]
