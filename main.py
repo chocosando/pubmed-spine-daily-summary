@@ -39,7 +39,7 @@ def get_latest_paper_details():
     
     if not id_list:
         # 백업 쿼리: 최근 7일간의 Radiology 저널 논문 5개
-        query_fallback = '"Radiology"[Journal] AND "last 7 days"[dp]'
+        query_fallback = '"Radiology"[Journal] AND "last 30 days"[dp]'
         handle = Entrez.esearch(db="pubmed", term=query_fallback, sort="relevance", retmax=5)
         record = Entrez.read(handle)
         id_list = record["IdList"]
