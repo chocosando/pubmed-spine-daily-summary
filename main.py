@@ -11,32 +11,31 @@ GMAIL_PW = os.getenv('GMAIL_PASSWORD')
 OPENAI_KEY = os.getenv('OPENAI_API_KEY')
 
 # [수정] 받는 사람 이메일 주소들을 리스트로 관리하세요.
-RECEIVER_EMAILS = [GMAIL_USER, "chocosando@daum.net", "agn70@yuhs.ac", "reanhea55@yuhs.ac", "classic0610@yuhs.ac", "andrew0668@yuhs.ac", "sando@yuhs.ac", "jaywony@gmail.com", "jjdragon112@gmail.com"] 
+#RECEIVER_EMAILS = [GMAIL_USER, "chocosando@daum.net", "agn70@yuhs.ac", "reanhea55@yuhs.ac", "classic0610@yuhs.ac", "andrew0668@yuhs.ac", "sando@yuhs.ac", "jaywony@gmail.com", "jjdragon112@gmail.com"] 
+RECEIVER_EMAILS = [GMAIL_USER] 
 
 def get_latest_paper_details():
     Entrez.email = GMAIL_USER
+    
+    # [개선 1] Spine Radiology 범위를 넓히기 위한 상세 키워드 조합
+    # Spine 뿐만 아니라 Intervertebral Disc, Spinal Cord, Spondylosis 등 포괄
+    spine_keywords = '("Spine"[Mesh] OR "Spinal Cord"[Mesh] OR "Intervertebral Disc"[Mesh] OR "Spondylosis"[Mesh] OR "Spinal Diseases"[Mesh] OR "Vertebrae"[Title/Abstract])'
+    
+    # [개선 2] 임상적 유용성이 높은 High-Impact 저널 리스트
+    # 권위 있는 Radiology 저널 및 Spine 전문 저널 포함
+    top_journals = '("Radiology"[Journal] OR "European Radiology"[Journal] OR "AJNR Am J Neuroradiol"[Journal] OR "Spine"[Journal] OR "The Spine Journal"[Journal] OR "Skeletal Radiology"[Journal] OR "Lancet"[Journal] OR "New England Journal of Medicine"[Journal])'
 
-    # MSK Radiology 관련 최신 논문 검색 (테스트를 위해 기간 30일 설정)
-    #query = '("Spine"[Mesh] OR "Radiology"[Journal]) AND "last 60 days"[dp]'
-    #handle = Entrez.esearch(db="pubmed", term=query, sort="relevance", retmax=1)
-    #record = Entrez.read(handle)
-    #id_list = record["IdList"]
+    # [개선 3] 검색 쿼리 결합 (최근 60일로 범위를 넓혀 그 중 가장 '인기 있는' 것 추출)
+    query = f"{spine_keywords} AND {top_journals} AND (Clinical Trial[Filter] OR Review[Filter] OR Systematic Review[Filter] OR \"last 60 days\"[dp])"
     
-    # [개선] 1. 영향력 있는 저널 리스트 지정
-    top_journals = '("Radiology"[Journal] OR "Lancet"[Journal] OR "New England Journal of Medicine"[Journal] OR "Nature Medicine"[Journal] OR "JAMA"[Journal])'
-    
-    # [개선] 2. 관심 키워드와 결합 (MSK 및 AI 관련 예시)
-    # retmax를 5정도로 늘려 후보군을 뽑은 뒤 그 중 첫 번째를 선택하면 더 정확합니다.
-    query = f'{top_journals} AND ("Musculoskeletal"[Mesh] OR "Artificial Intelligence"[Mesh]) AND "last 30 days"[dp]'
-    
-    # [개선] 3. sort="relevance" (관련도순) 혹은 "pub_date" (최신순) 설정
-    handle = Entrez.esearch(db="pubmed", term=query, sort="relevance", retmax=1)
+    # [개선 4] sort="relevance"를 통해 인용이나 매칭도가 높은 '인기 논문' 우선 추출
+    handle = Entrez.esearch(db="pubmed", term=query, sort="relevance", retmax=5)
     record = Entrez.read(handle)
     id_list = record["IdList"]
     
     if not id_list:
-        # 만약 너무 좁은 쿼리로 결과가 없다면, 좀 더 넓은 쿼리로 재검색하는 로직
-        query_fallback = '("Spine"[Mesh] OR "Radiology"[Journal]) AND "last 60 days"[dp]'
+        # 검색 결과가 없을 경우를 대비한 Fallback (일반적인 Spine 최신 논문)
+        query_fallback = '("Spine"[Journal] OR "Radiology"[Journal]) AND "last 30 days"[dp]'
         handle = Entrez.esearch(db="pubmed", term=query_fallback, sort="relevance", retmax=1)
         record = Entrez.read(handle)
         id_list = record["IdList"]
@@ -44,6 +43,7 @@ def get_latest_paper_details():
     if not id_list:
         return None
     
+    # 상위 5개 중 가장 적합한 첫 번째 논문 상세 정보 가져오기
     pmid = id_list[0]
     fetch_handle = Entrez.efetch(db="pubmed", id=pmid, retmode="xml")
     records = Entrez.read(fetch_handle)
@@ -71,6 +71,66 @@ def get_latest_paper_details():
         "pubmed_url": f"https://pubmed.ncbi.nlm.nih.gov/{pmid}/",
         "doi_url": f"https://doi.org/{doi}" if doi != "N/A" else "#"
     }
+
+
+# def get_latest_paper_details():
+#     Entrez.email = GMAIL_USER
+
+#     # MSK Radiology 관련 최신 논문 검색 (테스트를 위해 기간 30일 설정)
+#     #query = '("Spine"[Mesh] OR "Radiology"[Journal]) AND "last 60 days"[dp]'
+#     #handle = Entrez.esearch(db="pubmed", term=query, sort="relevance", retmax=1)
+#     #record = Entrez.read(handle)
+#     #id_list = record["IdList"]
+    
+#     # [개선] 1. 영향력 있는 저널 리스트 지정
+#     top_journals = '("Radiology"[Journal] OR "Lancet"[Journal] OR "New England Journal of Medicine"[Journal] OR "Nature Medicine"[Journal] OR "JAMA"[Journal])'
+    
+#     # [개선] 2. 관심 키워드와 결합 (MSK 및 AI 관련 예시)
+#     # retmax를 5정도로 늘려 후보군을 뽑은 뒤 그 중 첫 번째를 선택하면 더 정확합니다.
+#     query = f'{top_journals} AND ("Musculoskeletal"[Mesh] OR "Artificial Intelligence"[Mesh]) AND "last 30 days"[dp]'
+    
+#     # [개선] 3. sort="relevance" (관련도순) 혹은 "pub_date" (최신순) 설정
+#     handle = Entrez.esearch(db="pubmed", term=query, sort="relevance", retmax=1)
+#     record = Entrez.read(handle)
+#     id_list = record["IdList"]
+    
+#     if not id_list:
+#         # 만약 너무 좁은 쿼리로 결과가 없다면, 좀 더 넓은 쿼리로 재검색하는 로직
+#         query_fallback = '("Spine"[Mesh] OR "Radiology"[Journal]) AND "last 60 days"[dp]'
+#         handle = Entrez.esearch(db="pubmed", term=query_fallback, sort="relevance", retmax=1)
+#         record = Entrez.read(handle)
+#         id_list = record["IdList"]
+
+#     if not id_list:
+#         return None
+    
+#     pmid = id_list[0]
+#     fetch_handle = Entrez.efetch(db="pubmed", id=pmid, retmode="xml")
+#     records = Entrez.read(fetch_handle)
+#     article_data = records['PubmedArticle'][0]
+#     medline = article_data['MedlineCitation']['Article']
+    
+#     title = medline.get('ArticleTitle', 'No Title')
+#     abstract_list = medline.get('Abstract', {}).get('AbstractText', [])
+#     abstract = " ".join([str(text) for text in abstract_list])
+    
+#     authors = [f"{auth.get('LastName', '')} {auth.get('Initials', '')}" for auth in medline.get('AuthorList', [])]
+#     author_text = ", ".join(authors) if authors else "Unknown"
+    
+#     doi = "N/A"
+#     for aid in article_data['PubmedData'].get('ArticleIdList', []):
+#         if aid.attributes.get('IdType') == 'doi':
+#             doi = str(aid)
+#             break
+            
+#     journal = medline['Journal'].get('Title', 'Unknown Journal')
+    
+#     return {
+#         "title": title, "abstract": abstract, "authors": author_text,
+#         "journal": journal, "pmid": pmid, "doi": doi,
+#         "pubmed_url": f"https://pubmed.ncbi.nlm.nih.gov/{pmid}/",
+#         "doi_url": f"https://doi.org/{doi}" if doi != "N/A" else "#"
+#     }
 
 def summarize_and_translate(abstract):
     client = openai.OpenAI(api_key=OPENAI_KEY)
