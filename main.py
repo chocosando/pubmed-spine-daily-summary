@@ -20,15 +20,28 @@ RECEIVER_EMAILS = [GMAIL_USER, "chocosando@daum.net", "agn70@yuhs.ac", "reanhea5
 
 def get_latest_paper_details():
     Entrez.email = GMAIL_USER
+
     
     # [검색 쿼리] 최근 7일 이내의 다양한 저널 및 주제
-    journals = (
-        '("Radiology"[Journal] OR "Radiology. Artificial intelligence"[Journal] OR '
-        '"Lancet Digital Health"[Journal] OR "European Radiology"[Journal] OR '
-        '"Skeletal radiology"[Journal] OR "AJR. American journal of roentgenology"[Journal])'
-    )
-    topics = '("Musculoskeletal System"[Mesh] OR "Artificial Intelligence"[Mesh] OR "Deep Learning"[Mesh])'
-    
+    # journals = (
+    #     '("Radiology"[Journal] OR "Radiology. Artificial intelligence"[Journal] OR '
+    #     '"Lancet Digital Health"[Journal] OR "European Radiology"[Journal] OR '
+    #     '"Skeletal radiology"[Journal] OR "AJR. American journal of roentgenology"[Journal]) OR ' 
+    #     '"Korean Journal of radiology"[Journal] OR "European journal of Radiology"[Journal]) OR ' 
+    #     '"Scientific Reports"[Journal] OR "European journal of Radiology"[Journal]) OR ' 
+    # )
+    journals = [
+        "Radiology", "Radiology. Artificial intelligence", "Lancet Digital Health",
+        "European Radiology", "Skeletal radiology", "AJR. American journal of roentgenology",
+        "Korean Journal of radiology", "European journal of Radiology", "Scientific Reports",
+        "Nature Medicine", "Nature Communications", "Lancet", "Spine", "The Spine Journal",
+        "AJNR. American journal of neuroradiology", "Neuroradiology", "Bone & joint journal",
+        "PLoS ONE", "JAMA"
+    ]
+
+    # topics = '("Musculoskeletal System"[Mesh] OR "Artificial Intelligence"[Mesh] OR "Deep Learning"[Mesh])'
+    topics = '("Spine"[Mesh] OR "Spinal Cord"[Mesh] OR "Spondylosis"[Mesh] OR "Intervertebral Disc"[Mesh] OR "Spinal Diseases"[Mesh] OR "Vertebrae"[Title/Abstract])'
+
     # 최신성(pub_date)을 기준으로 검색하거나, 관련도순 검색 결과 중 상위권을 후보로 둠
     query = f"{journals} AND {topics} AND (2025:2026[pdat])"
     
@@ -154,11 +167,11 @@ def summarize_and_translate(abstract):
     1. Expand the content to be twice as detailed as a standard summary.
     2. Write in Korean, but ALWAYS include key technical and medical terms in English brackets [English Term].
     3. Ensure the summary covers:
-       - 서론 및 연구 목적 [Introduction & Objective]: 연구의 배경과 가설을 상세히 기술.
-       - 대상 및 방법론 [Materials & Methods]: 환자 군[Cohort], 모델 구조[Architecture], 학습 방법[Training] 등 포함.
-       - 결과 분석 및 통계 [Results & Statistical Analysis]: 구체적인 수치[Numerical values], 신뢰구간[CI], 유의수준[p-value]을 반드시 포함.
-       - 고찰 및 임상적 가치 [Discussion & Clinical Value]: 실제 판독 현장에서의 의의와 기대 효과.
-       - 연구의 한계점 [Limitations]: 초록에서 언급된 제약 사항 기술.
+       - 서론: 연구의 배경과 가설을 상세히 기술.
+       - 방법: 환자 군[Cohort], 모델 구조[Architecture], 학습 방법[Training] 등 포함.
+       - 결과: 구체적인 수치[Numerical values], 신뢰구간[CI], 유의수준[p-value]을 반드시 포함.
+       - 고찰: 실제 판독 현장에서의 의의와 기대 효과.
+       - 한계점: 초록에서 언급된 제약 사항 기술.
 
     Abstract: {abstract}
     """
