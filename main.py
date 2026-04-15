@@ -199,16 +199,71 @@ def send_mail(info, content, receiver):
         server.login(GMAIL_USER, GMAIL_PW)
         server.send_message(msg)
 
+def send_telegram_message(info, content):
+    token = os.getenv('TELEGRAM_BOT_TOKEN')
+    chat_id = os.getenv('TELEGRAM_CHAT_ID')
+    
+    if not token or not chat_id:
+        print("Telegram credentials missing.")
+        return
+
+    # 텔레그램용 메시지 구성 (HTML 마크업 활용)
+    # <br> 대신 \n을 사용하며, <b>, <i> 태그만 지원됩니다.
+    text = f"<b>[Daily Spine Radiology]</b>\n\n"
+    text += f"<b>{info['title']}</b>\n\n"
+    text += f"<i>{info['journal']} ({info['pmid']})</i>\n\n"
+    text += f"━━━━━━━━━━━━━━━\n"
+    text += f"{content}\n"
+    text += f"━━━━━━━━━━━━━━━\n\n"
+    text += f"🔗 <a href='{info['pubmed_url']}'>PubMed 보기</a>"
+
+    url = f"https://api.telegram.org/bot{token}/sendMessage"
+    payload = {
+        "chat_id": chat_id,
+        "text": text,
+        "parse_mode": "HTML",
+        "disable_web_page_preview": False
+    }
+    
+    response = requests.post(url, json=payload)
+    return response.status_code
+
+
 if __name__ == "__main__":
     info = get_latest_paper_details()
     if info:
         content = summarize_and_translate(info['abstract'])
-        # [수정] 여러 명에게 발송
+        
+        # 1. 이메일 발송 (기존 로직)
         for email in RECEIVER_EMAILS:
             try:
                 send_mail(info, content, email)
-                print(f"Success: Sent to {email}")
+                print(f"Email success: {email}")
             except Exception as e:
-                print(f"Failed: {email} - {e}")
+                print(f"Email failed: {e}")
+        
+        # 2. 텔레그램 발송 (추가된 로직)
+        try:
+            status = send_telegram_message(info, content)
+            if status == 200:
+                print("Telegram success!")
+        except Exception as e:
+            print(f"Telegram failed: {e}")
     else:
         print("No papers found.")
+
+        
+
+# if __name__ == "__main__":
+#     info = get_latest_paper_details()
+#     if info:
+#         content = summarize_and_translate(info['abstract'])
+#         # [수정] 여러 명에게 발송
+#         for email in RECEIVER_EMAILS:
+#             try:
+#                 send_mail(info, content, email)
+#                 print(f"Success: Sent to {email}")
+#             except Exception as e:
+#                 print(f"Failed: {email} - {e}")
+#     else:
+#         print("No papers found.")
