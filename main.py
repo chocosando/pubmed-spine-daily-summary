@@ -85,19 +85,48 @@ def get_latest_paper_details():
         if aid.attributes.get('IdType') == 'doi':
             doi = str(aid)
             break
-            
+    
     journal = medline['Journal'].get('Title', 'Unknown Journal')
 
-    pub_date_info = article['Journal']['JournalIssue']['PubDate']
-    year = pub_date_info.get('Year', '')
-    month = pub_date_info.get('Month', '')
-    day = pub_date_info.get('Day', '')
+    try:
+        # 논문 메타데이터 접근
+        article = fetch_record['PubmedArticle'][0]['MedlineCitation']['Article']
+        pmid = fetch_record['PubmedArticle'][0]['MedlineCitation']['PMID']
         
-    # 만약 Year가 없다면 MedlineDate 필드 확인 (2026 Spring 같은 형식)
-    if not year:
-        year = pub_date_info.get('MedlineDate', 'Date N/A')
-    
-    date_str = f"{year} {month} {day}".strip()
+        # 1. 저자명 추출
+        authors_list = []
+        if 'AuthorList' in article:
+            for auth in article['AuthorList']:
+                last_name = auth.get('LastName', '')
+                initials = auth.get('Initials', '')
+                authors_list.append(f"{last_name} {initials}".strip())
+        authors_str = ", ".join(authors_list[:5]) + (" et al." if len(authors_list) > 5 else "")
+
+        # 2. 발행 날짜 추출 (핵심: KeyError 방지)
+        pub_date_info = article['Journal']['JournalIssue']['PubDate']
+        year = pub_date_info.get('Year', '')
+        month = pub_date_info.get('Month', '')
+        day = pub_date_info.get('Day', '')
+        
+        # 만약 Year가 없다면 MedlineDate 필드 확인 (2026 Spring 같은 형식)
+        if not year:
+            year = pub_date_info.get('MedlineDate', 'Date N/A')
+            
+        date_str = f"{year} {month} {day}".strip()
+
+        # 3. 데이터 딕셔너리 생성 (여기서 모든 키를 확실히 정의)
+        return {
+            'title': article.get('ArticleTitle', 'Title N/A'),
+            'abstract': abstract, # 기존에 추출한 abstract 변수
+            'journal': article['Journal'].get('Title', 'Journal N/A'),
+            'date': date_str if date_str else "Date N/A", # 여기서 'date' 키를 확실히 생성
+            'authors': authors_str if authors_str else "Author N/A",
+            'pubmed_url': f"https://pubmed.ncbi.nlm.nih.gov/{pmid}/"
+        }
+    except Exception as e:
+        print(f"Error parsing paper details: {e}")
+        return None
+
     
     return {
         "title": title, "abstract": abstract, "authors": author_text,
