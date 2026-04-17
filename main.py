@@ -41,7 +41,7 @@ def get_latest_paper_details():
     topics = '("Spine"[Mesh] OR "Spinal Cord"[Mesh] OR "Spondylosis"[Mesh] OR "Intervertebral Disc"[Mesh] OR "Spinal Diseases"[Mesh] OR "Vertebrae"[Title/Abstract])'
 
     # 최신성(pub_date)을 기준으로 검색하거나, 관련도순 검색 결과 중 상위권을 후보로 둠
-    query = f"{journals} AND {topics} AND (2025:2026[pdat])"
+    query = f"{journals} AND {topics} AND (2024:2030[pdat])"
     # [개선] hasabstract[Filter] 추가: 초록이 있는 논문만 검색
 #    query = f"({journals})AND hasabstract[Filter] AND \"last 60 days\"[dp]"
     
@@ -52,7 +52,7 @@ def get_latest_paper_details():
     
     if not id_list:
         # 백업 쿼리: 최근 7일간의 Radiology 저널 논문 5개
-        query_fallback = '"Radiology"[Journal] AND "last 60 days"[dp]'
+        query_fallback = '"Radiology"[Journal] AND "last 90 days"[dp]'
         handle = Entrez.esearch(db="pubmed", term=query_fallback, sort="relevance", retmax=5)
         record = Entrez.read(handle)
         id_list = record["IdList"]
