@@ -46,13 +46,13 @@ def get_latest_paper_details():
 #    query = f"({journals})AND hasabstract[Filter] AND \"last 60 days\"[dp]"
     
     # [수정] retmax를 10으로 늘려 후보군을 많이 확보합니다.
-    handle = Entrez.esearch(db="pubmed", term=query, sort="relevance", retmax=10)
+    handle = Entrez.esearch(db="pubmed", term=query, sort="relevance", retmax=100)
     record = Entrez.read(handle)
     id_list = record["IdList"]
     
     if not id_list:
         # 백업 쿼리: 최근 7일간의 Radiology 저널 논문 5개
-        query_fallback = '"Radiology"[Journal] AND "last 30 days"[dp]'
+        query_fallback = '"Radiology"[Journal] AND "last 60 days"[dp]'
         handle = Entrez.esearch(db="pubmed", term=query_fallback, sort="relevance", retmax=5)
         record = Entrez.read(handle)
         id_list = record["IdList"]
