@@ -96,64 +96,6 @@ def get_latest_paper_details():
     }
 
 
-# def get_latest_paper_details():
-#     Entrez.email = GMAIL_USER
-
-#     # MSK Radiology 관련 최신 논문 검색 (테스트를 위해 기간 30일 설정)
-#     #query = '("Spine"[Mesh] OR "Radiology"[Journal]) AND "last 60 days"[dp]'
-#     #handle = Entrez.esearch(db="pubmed", term=query, sort="relevance", retmax=1)
-#     #record = Entrez.read(handle)
-#     #id_list = record["IdList"]
-    
-#     # [개선] 1. 영향력 있는 저널 리스트 지정
-#     top_journals = '("Radiology"[Journal] OR "Lancet"[Journal] OR "New England Journal of Medicine"[Journal] OR "Nature Medicine"[Journal] OR "JAMA"[Journal])'
-    
-#     # [개선] 2. 관심 키워드와 결합 (MSK 및 AI 관련 예시)
-#     # retmax를 5정도로 늘려 후보군을 뽑은 뒤 그 중 첫 번째를 선택하면 더 정확합니다.
-#     query = f'{top_journals} AND ("Musculoskeletal"[Mesh] OR "Artificial Intelligence"[Mesh]) AND "last 30 days"[dp]'
-    
-#     # [개선] 3. sort="relevance" (관련도순) 혹은 "pub_date" (최신순) 설정
-#     handle = Entrez.esearch(db="pubmed", term=query, sort="relevance", retmax=1)
-#     record = Entrez.read(handle)
-#     id_list = record["IdList"]
-    
-#     if not id_list:
-#         # 만약 너무 좁은 쿼리로 결과가 없다면, 좀 더 넓은 쿼리로 재검색하는 로직
-#         query_fallback = '("Spine"[Mesh] OR "Radiology"[Journal]) AND "last 60 days"[dp]'
-#         handle = Entrez.esearch(db="pubmed", term=query_fallback, sort="relevance", retmax=1)
-#         record = Entrez.read(handle)
-#         id_list = record["IdList"]
-
-#     if not id_list:
-#         return None
-    
-#     pmid = id_list[0]
-#     fetch_handle = Entrez.efetch(db="pubmed", id=pmid, retmode="xml")
-#     records = Entrez.read(fetch_handle)
-#     article_data = records['PubmedArticle'][0]
-#     medline = article_data['MedlineCitation']['Article']
-    
-#     title = medline.get('ArticleTitle', 'No Title')
-#     abstract_list = medline.get('Abstract', {}).get('AbstractText', [])
-#     abstract = " ".join([str(text) for text in abstract_list])
-    
-#     authors = [f"{auth.get('LastName', '')} {auth.get('Initials', '')}" for auth in medline.get('AuthorList', [])]
-#     author_text = ", ".join(authors) if authors else "Unknown"
-    
-#     doi = "N/A"
-#     for aid in article_data['PubmedData'].get('ArticleIdList', []):
-#         if aid.attributes.get('IdType') == 'doi':
-#             doi = str(aid)
-#             break
-            
-#     journal = medline['Journal'].get('Title', 'Unknown Journal')
-    
-#     return {
-#         "title": title, "abstract": abstract, "authors": author_text,
-#         "journal": journal, "pmid": pmid, "doi": doi,
-#         "pubmed_url": f"https://pubmed.ncbi.nlm.nih.gov/{pmid}/",
-#         "doi_url": f"https://doi.org/{doi}" if doi != "N/A" else "#"
-#     }
 
 def summarize_and_translate(abstract):
     client = openai.OpenAI(api_key=OPENAI_KEY)
@@ -162,6 +104,10 @@ def summarize_and_translate(abstract):
     prompt = f"""
     You are an expert Musculoskeletal Radiologist and Medical Scientist (M.D.-Ph.D.). 
     Analyze the provided abstract in great detail for a specialist-level report.
+    
+    ### 1. 제목: {info['title']}
+    ### 2. 저널 및 날짜: {info['journal']} | 발행일: {info['date']}
+    ### 3. 저자: {info['authors']}
     
     # [Output Format]
     # 1. Title: {info['title']}
