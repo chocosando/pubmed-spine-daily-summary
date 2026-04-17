@@ -14,7 +14,8 @@ OPENAI_KEY = os.getenv('OPENAI_API_KEY')
 TELEGRAM_BOT_TOKEN = os.getenv('TELEGRAM_BOT_TOKEN')
 TELEGRAM_CHAT_ID = os.getenv('TELEGRAM_CHAT_ID')
 
-RECEIVER_EMAILS = [GMAIL_USER] 
+#RECEIVER_EMAILS = [GMAIL_USER, "chocosando@daum.net", "agn70@yuhs.ac", "reanhea55@yuhs.ac", "classic0610@yuhs.ac", "andrew0668@yuhs.ac", "sando@yuhs.ac", "jaywony@gmail.com", "jjdragon112@gmail.com", "leesw1@gmail.com", "drchoi01@snu.ac.kr"] 
+RECEIVER_EMAILS = [GMAIL_USER]  
 
 def get_latest_paper_details():
     Entrez.email = GMAIL_USER
@@ -95,4 +96,101 @@ def summarize_and_translate(info):
     # [수정] 요청하신 줄바꿈 포맷 반영
     prompt = f"""
     You are an expert Musculoskeletal Radiologist (M.D.-Ph.D.). 
-    Analyze the provided abstract in great detail for
+    Analyze the provided abstract in great detail for a specialist-level report.
+    
+    ### 1. 제목: {info['title']}
+
+    ### 2. 저널 및 날짜: {info['journal']} | 발행일: {info['date']}
+
+    ### 3. 저자: {info['authors']}
+
+    ---
+
+    [Guidelines]
+    1. Expand the content to be twice as detailed as a standard summary.
+    2. Write in Korean, but ALWAYS include key technical and medical terms in [English Term].
+    3. Structure: 서론[Introduction], 방법[Methods], 결과[Results], 고찰[Discussion], 한계점[Limitations].
+
+    Abstract to analyze: {info['abstract']}
+    """
+    
+    response = client.chat.completions.create(
+        model="gpt-4o",
+        messages=[
+            {"role": "system", "content": "You are a senior academic researcher providing in-depth radiology reviews."},
+            {"role": "user", "content": prompt}
+        ],
+        temperature=0.2
+    )
+    return response.choices[0].message.content
+
+def send_mail(info, content, receiver):
+    msg = MIMEMultipart()
+    msg['Subject'] = f"[Daily Spine Radiology] {info['title'][:50]}..."
+    msg['From'] = GMAIL_USER
+    msg['To'] = receiver
+    
+    html_content = f"""
+    <html>
+    <body style="font-family: sans-serif; line-height: 1.6;">
+        <div style="max-width: 600px; margin: auto; border: 1px solid #ddd; padding: 20px;">
+            <h2 style="color: #0071bc;">Spine Radiology Update</h2>
+            <p><strong>Title:</strong> {info['title']}<br>
+            <strong>Journal:</strong> {info['journal']} | {info['date']}</p>
+            <div style="background: #f9f9f9; padding: 15px; border-radius: 5px; white-space: pre-wrap;">
+                {content}
+            </div>
+            <p><a href="{info['pubmed_url']}">PubMed View</a></p>
+        </div>
+    </body>
+    </html>
+    """
+    msg.attach(MIMEText(html_content, 'html'))
+
+    with smtplib.SMTP_SSL('smtp.gmail.com', 465) as server:
+        server.login(GMAIL_USER, GMAIL_PW)
+        server.send_message(msg)
+
+def send_telegram_message(info, content):
+    if not TELEGRAM_BOT_TOKEN or not TELEGRAM_CHAT_ID:
+        return
+    
+    # 텔레그램은 MarkdownV2보다 HTML 파싱이 안정적일 때가 많습니다.
+    text = f"<b>[Daily Spine Radiology]</b>\n\n"
+    text += f"<b>{info['title']}</b>\n\n"
+    text += f"<i>{info['journal']} | {info['date']}</i>\n\n"
+    text += f"━━━━━━━━━━━━━━━\n"
+    text += f"{content}\n"
+    text += f"━━━━━━━━━━━━━━━\n\n"
+    text += f"🔗 <a href='{info['pubmed_url']}'>PubMed 보기</a>"
+
+    url = f"https://api.telegram.org/bot{TELEGRAM_BOT_TOKEN}/sendMessage"
+    payload = {"chat_id": TELEGRAM_CHAT_ID, "text": text, "parse_mode": "HTML"}
+    
+    res = requests.post(url, json=payload)
+    return res.status_code
+
+if __name__ == "__main__":
+    info = get_latest_paper_details()
+    if info:
+        # [중요] summarize_and_translate에 'info' 딕셔너리를 전달
+        content = summarize_and_translate(info)
+        
+        # 이메일 발송
+        for email in RECEIVER_EMAILS:
+            try:
+                send_mail(info, content, email)
+                print(f"Email success: {email}")
+            except Exception as e:
+                print(f"Email failed: {e}")
+        
+        # 텔레그램 발송
+        print("Attempting to send Telegram message...")
+        try:
+            status = send_telegram_message(info, content)
+            if status == 200:
+                print("Telegram success!")
+        except Exception as e:
+            print(f"Telegram failed: {e}")
+    else:
+        print("No papers found.")
