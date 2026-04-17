@@ -163,10 +163,10 @@ def summarize_and_translate(abstract):
     You are an expert Musculoskeletal Radiologist and Medical Scientist (M.D.-Ph.D.). 
     Analyze the provided abstract in great detail for a specialist-level report.
     
-    [Output Format]
-    1. Title: {info['title']}
-    2. Journal & Date: {info['journal']} | Published: {info.get('date', 'N/A')}
-    3. Authors: {info.get('authors', 'N/A')}
+    # [Output Format]
+    # 1. Title: {info['title']}
+    # 2. Journal & Date: {info['journal']} | Published: {info.get('date', 'N/A')}
+    # 3. Authors: {info.get('authors', 'N/A')}
     
     [Guidelines]
     1. Expand the content to be twice as detailed as a standard summary.
@@ -281,17 +281,3 @@ if __name__ == "__main__":
     else:
         print("No papers found.")
 
-
-# if __name__ == "__main__":
-#     info = get_latest_paper_details()
-#     if info:
-#         content = summarize_and_translate(info['abstract'])
-#         # [수정] 여러 명에게 발송
-#         for email in RECEIVER_EMAILS:
-#             try:
-#                 send_mail(info, content, email)
-#                 print(f"Success: Sent to {email}")
-#             except Exception as e:
-#                 print(f"Failed: {email} - {e}")
-#     else:
-#         print("No papers found.")
