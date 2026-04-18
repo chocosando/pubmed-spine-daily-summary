@@ -215,7 +215,7 @@ if __name__ == "__main__":
         # 텔레그램 발송
         print("Attempting to send Telegram message...")
         try:
-#            status = send_telegram_message(info, content)
+            status = send_telegram_message(info, content)
             if status == 200:
                 print("Telegram success!")
         except Exception as e:
