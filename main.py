@@ -165,7 +165,7 @@ def send_mail(info, content, receiver):
     """
     
     msg = MIMEMultipart()
-    msg['Subject'] = f"[Daily Report] {info['title'][:60]}..."
+    msg['Subject'] = f"[KSSR Daily] {info['title'][:60]}..."
 #   msg['From'] = GMAIL_USER
     display_name = "추영 KSSR"
     msg['From'] = f"{Header(display_name, 'utf-8').encode()} <{GMAIL_USER}>"
