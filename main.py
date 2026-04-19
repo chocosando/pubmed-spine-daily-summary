@@ -102,9 +102,8 @@ def summarize_and_translate(info):
     
     # [수정] 요청하신 줄바꿈 포맷 반영
     prompt = f"""
-    You are an expert Musculoskeletal Radiologist (M.D.-Ph.D.). 
+    You are an expert Spine Radiologist (M.D.-Ph.D.). 
     Analyze the provided abstract in great detail for a specialist-level report.
-    
 
     ---
 
