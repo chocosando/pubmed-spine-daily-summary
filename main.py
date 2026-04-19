@@ -139,11 +139,16 @@ def send_mail(info, content, receiver):
     <body style="font-family: 'Malgun Gothic', 'Apple SD Gothic Neo', sans-serif; line-height: 1.6; color: #333;">
         <div style="max-width: 700px; margin: auto; border: 1px solid #e1e4e8; padding: 30px; border-radius: 12px; box-shadow: 0 4px 6px rgba(0,0,0,0.1);">
             <header style="border-bottom: 3px solid #0071bc; padding-bottom: 15px; margin-bottom: 25px;">
-                <h2 style="color: #0071bc; margin: 0;">📩 Spine Radiology Daily Report</h2>
+                <h2 style="color: #0071bc; margin: 0;">📩 Spine Radiology Daily</h2>
                 <p style="font-size: 0.8em; color: #999; margin-top: 15px;">  </p>
-                <p style="font-size: 1.0em; color: #111111; margin-top: 15px;"> <a href="{info['pubmed_url']}" > {info['title']} </a> </p>
-                <p style="font-size: 0.8em; color: #222222; margin-top: 15px;"> {info['journal']} | {info['date']} </p>
-                <p style="font-size: 0.8em; color: #999; margin-top: 15px;">  </p>
+                  <div style="margin-top: 20px;">
+                    <p style="font-size: 1.1em; font-weight: bold; margin: 0; line-height: 1.4;">
+                        <a href="{info['pubmed_url']}" style="color: #111111; text-decoration: none;">{info['title']}</a> 
+                    </p>
+                    <p style="font-size: 0.85em; color: #555; margin: 8px 0 0 0;">
+                        <span style="color: #222222; font-weight: 600;">{info['journal']} </span> | {info['date']}
+                    </p>
+                  </div>
             </header>
             
             <section style="margin-bottom: 25px;">
