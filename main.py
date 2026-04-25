@@ -7,6 +7,7 @@ from email.mime.text import MIMEText
 from email.mime.multipart import MIMEMultipart
 import random
 from email.header import Header
+import html
 
 # 환경 변수 및 설정
 GMAIL_USER = os.getenv('GMAIL_USER')
